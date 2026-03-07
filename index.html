@@ -51,14 +51,14 @@ body>*{position:relative;z-index:1}
 .cap-change-pct{font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:600;padding:2px 8px;border-radius:6px;margin-top:2px}
 .cap-edit-box{background:rgba(0,230,118,0.04);border:1px solid var(--border);border-radius:10px;padding:14px;margin-top:10px}
 .dashboard{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.dash-card{background:var(--bg-elevated);border:1px solid var(--border);border-radius:12px;padding:14px 8px;text-align:center;transition:all 0.3s;position:relative;overflow:hidden}
+.dash-card{background:var(--bg-elevated);border:1px solid var(--border);border-radius:12px;padding:20px 10px;text-align:center;transition:all 0.3s;position:relative;overflow:hidden;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .dash-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
 .dash-card.c-accent::before{background:var(--accent)}.dash-card.c-red::before{background:var(--red)}.dash-card.c-gold::before{background:var(--gold)}.dash-card.c-cyan::before{background:var(--cyan)}.dash-card.c-purple::before{background:var(--purple)}
 .dash-card:hover{border-color:var(--border-hover);transform:translateY(-2px)}
-.dash-icon{font-size:1.2rem;margin-bottom:2px}
-.dash-val{font-family:'JetBrains Mono',monospace;font-size:clamp(1.1rem,3vw,1.4rem);font-weight:700;margin:3px 0}
+.dash-icon{font-size:1.4rem;margin-bottom:4px}
+.dash-val{font-family:'JetBrains Mono',monospace;font-size:clamp(1.2rem,3.5vw,1.6rem);font-weight:700;margin:5px 0}
 .dash-val.v-accent{color:var(--accent)}.dash-val.v-red{color:var(--red)}.dash-val.v-gold{color:var(--gold)}.dash-val.v-cyan{color:var(--cyan)}.dash-val.v-purple{color:var(--purple)}
-.dash-lbl{color:var(--text-muted);font-size:0.68rem;font-weight:500}
+.dash-lbl{color:var(--text-muted);font-size:clamp(0.78rem,2vw,0.88rem);font-weight:600}
 .streak-box{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
 .streak-label{font-size:0.82rem;font-weight:600;color:var(--text-dim);white-space:nowrap}
 .streak-dots{display:flex;gap:3px;flex-wrap:wrap;flex:1;justify-content:center}
@@ -146,8 +146,8 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer}
 .cap-item{justify-content:center;min-width:100%}
 .cap-arrow{transform:rotate(90deg)}
 .dashboard{gap:8px}
-.dash-card{padding:12px 6px}
-.dash-val{font-size:1.15rem}
+.dash-card{padding:16px 6px;min-height:95px}
+.dash-val{font-size:1.2rem}
 .chart-area{height:220px}
 }
 </style>
@@ -177,11 +177,11 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer}
 <div class="dash-card c-cyan"><div class="dash-icon">📅</div><div class="dash-val v-cyan" id="dDays">0</div><div class="dash-lbl">أيام التداول</div></div>
 <div class="dash-card c-accent"><div class="dash-icon">✅</div><div class="dash-val v-accent" id="dWin">0</div><div class="dash-lbl">أيام رابحة</div></div>
 <div class="dash-card c-red"><div class="dash-icon">❌</div><div class="dash-val v-red" id="dLose">0</div><div class="dash-lbl">أيام خاسرة</div></div>
-<div class="dash-card c-purple"><div class="dash-icon">🎯</div><div class="dash-val v-purple" id="dRate">0%</div><div class="dash-lbl">نسبة الأيام الرابحة</div></div>
-<div class="dash-card c-accent"><div class="dash-icon">🏆</div><div class="dash-val v-accent" id="dBest">$0</div><div class="dash-lbl">أعلى ربح يومي</div></div>
-<div class="dash-card c-red"><div class="dash-icon">📉</div><div class="dash-val v-red" id="dWorst">$0</div><div class="dash-lbl">أكبر خسارة يومية</div></div>
+<div class="dash-card c-accent"><div class="dash-icon">💹</div><div class="dash-val v-accent" id="dTotalProfits">$0</div><div class="dash-lbl">الأرباح</div></div>
+<div class="dash-card c-red"><div class="dash-icon">💸</div><div class="dash-val v-red" id="dTotalLosses">$0</div><div class="dash-lbl">الخسائر</div></div>
 <div class="dash-card c-gold"><div class="dash-icon">📊</div><div class="dash-val v-gold" id="dAvg">$0</div><div class="dash-lbl">متوسط الربح اليومي</div></div>
 <div class="dash-card c-cyan"><div class="dash-icon">💰</div><div class="dash-val v-cyan" id="dTotal">$0</div><div class="dash-lbl">إجمالي الربح الكلي</div></div>
+<div class="dash-card c-purple"><div class="dash-icon">📈</div><div class="dash-val v-purple" id="dCapPct">0%</div><div class="dash-lbl">نسبة الربح من رأس المال</div></div>
 </div>
 <div class="streak-box"><span class="streak-label">🔥 آخر 20 يوم</span><div class="streak-dots" id="streakDots"></div><span class="streak-count" id="streakCount"></span></div>
 </div></div>
@@ -230,6 +230,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer}
 </div></div>
 <script>
 var KEY='turkiJournalV2',CAP_KEY='turkiCapital',THEME_KEY='turkiTheme',entries=[],capital=1000;
+function fmt(v){var n=parseFloat(v);if(isNaN(n))return'0.00';return n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
 var planTexts=["📌 حدّد هدفك اليومي بوضوح… والتزم به مهما كانت المغريات","🎯 اليوم الناجح نتيجة خطة نُفذت بانضباط","🛡️ أوقف الخسارة عند أول إشارة ضعف… حماية رأس المال أولوية","📊 الانضباط المستمر يبني أرباحًا… الربح السريع يبني أخطاء","💰 إدارة المخاطر أهم من مطاردة الفرص","📘 ادخل الصفقة بخطة… واخرج منها بخطة","⚖️ لا تدخل صفقة بلا سبب واضح ومعيار محدد","📉 تقبل الخسارة الصغيرة… لتمنع الخسارة الكبيرة","🧮 كل صفقة محسوبة… لا مكان للعشوائية","🔒 التزم بحدودك اليومية… فالحدود تصنع الاستمرارية","📍 انتظر تأكيد الإشارة… ولا تستبق الحركة","📈 لا ترفع المخاطرة لتعويض خسارة","🧾 وثّق كل صفقة… فالمراجعة تصنع التطور","🛑 إذا تحقّق الهدف اليومي… توقف","🔄 لا تغيّر خطتك أثناء الصفقة","📆 التزم بعدد صفقات محدد يوميًا","📏 قِس أداءك بالخطة… لا بالمشاعر","🔍 ابحث عن الجودة… لا عن الكثرة","💡 الخطة الواضحة تقلل القرارات العاطفية","🏗️ الاستمرارية اليومية تبني نتائج سنوية"];
 var motTexts=["📈 التداول سباق طويل… والالتزام هو خط النهاية","💪 الانضباط يصنع المحترف… لا الاستراتيجية وحدها","🎯 ركّز على جودة التنفيذ… فالنتائج تتبع الأداء","🧠 احترافك يبدأ عندما تتحكم بعواطفك قبل صفقاتك","⏳ السوق لا يكافئ المتسرعين… بل يكرم الصبورين","🔥 أكبر خسارة ليست في المال… بل في فقدان الانضباط","🧭 التزامك بالخطة أهم من عدد الصفقات","🚀 التطور اليومي البسيط يصنع نتائج كبيرة","🏆 المحترف ينتظر فرصته… ولا يطارد السوق","🌱 الثبات النفسي هو رأس المال الحقيقي","⚡ القرار الهادئ أقوى من الاندفاع","🎓 كل خسارة درس… إن أحسنت قراءته","🧘 الهدوء أثناء التقلبات علامة احتراف","🔁 النجاح نتيجة تكرار سلوك صحيح","🧱 الثقة تُبنى بالانضباط لا بالحظ","🧩 لا تبحث عن صفقة مثالية… بل عن تنفيذ مثالي","🌊 دع السوق يتحرك… ولا تسبقه","🏹 الدقة أهم من السرعة","🛤️ التقدم البطيء الثابت أفضل من قفزة عشوائية","👑 السيطرة على النفس أعظم من السيطرة على السوق"];
 document.addEventListener('DOMContentLoaded',function(){var t=localStorage.getItem(THEME_KEY);document.body.setAttribute('data-theme',t||'dark');document.getElementById('themeBtn').textContent=((t||'dark')==='dark')?'🌙':'☀️';load();document.getElementById('inDate').value=new Date().toISOString().split('T')[0];render();startTicker()});
@@ -237,24 +238,26 @@ function toggleTheme(){var cur=document.body.getAttribute('data-theme');var nw=c
 function load(){try{var s=localStorage.getItem(KEY);if(s)entries=JSON.parse(s);var c=localStorage.getItem(CAP_KEY);if(c)capital=parseFloat(c)||1000;if(!s){var old=localStorage.getItem('turkiTradingData');if(old){var d=JSON.parse(old);if(d.capital){capital=d.capital;localStorage.setItem(CAP_KEY,String(capital))}if(d.trades&&d.trades.length){var days={};var comm=(d.commissionBuy||2.2885)+(d.commissionSell||2.2885);d.trades.forEach(function(t){if(!t.result||!t.date)return;if(!days[t.date])days[t.date]=0;var g=parseFloat(t.profitValue)||0;days[t.date]+=t.result==='ناجحة'?g-comm:-(g+comm)});Object.keys(days).forEach(function(date){entries.push({id:Date.now()+Math.random(),date:date,profit:Math.round(days[date]*100)/100})});save()}}}}catch(e){console.error(e)}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(entries))}catch(e){toast('Error','error')}}
 function sorted(){return entries.slice().sort(function(a,b){return a.date.localeCompare(b.date)})}
-function stats(data){if(!data)data=sorted();var n=data.length,w=data.filter(function(e){return e.profit>0}).length,l=n-w;var r=n?Math.round(w/n*100):0;var ps=data.map(function(e){return e.profit});var best=n?Math.max.apply(null,ps):0,worst=n?Math.min.apply(null,ps):0;var total=Math.round(ps.reduce(function(a,b){return a+b},0)*100)/100;var avg=n?Math.round(total/n*100)/100:0;return{n:n,w:w,l:l,r:r,best:best,worst:worst,total:total,avg:avg}}
+function stats(data){if(!data)data=sorted();var n=data.length,w=data.filter(function(e){return e.profit>0}).length,l=n-w;var r=n?Math.round(w/n*100):0;var ps=data.map(function(e){return e.profit});var best=n?Math.max.apply(null,ps):0,worst=n?Math.min.apply(null,ps):0;var total=Math.round(ps.reduce(function(a,b){return a+b},0)*100)/100;var avg=n?Math.round(total/n*100)/100:0;var totalProfits=Math.round(ps.filter(function(p){return p>0}).reduce(function(a,b){return a+b},0)*100)/100;var totalLosses=Math.round(Math.abs(ps.filter(function(p){return p<0}).reduce(function(a,b){return a+b},0))*100)/100;var capPct=capital>0?Math.round(total/capital*1000)/10:0;return{n:n,w:w,l:l,r:r,best:best,worst:worst,total:total,avg:avg,totalProfits:totalProfits,totalLosses:totalLosses,capPct:capPct}}
 function render(){var d=sorted(),s=stats(d);var currentBal=Math.round((capital+s.total)*100)/100;var change=Math.round(s.total*100)/100;var changePct=capital>0?Math.round((change/capital)*1000)/10:0;
-document.getElementById('capStart').textContent='$'+capital;document.getElementById('capCurrent').textContent='$'+currentBal;document.getElementById('capCurrent').style.color=currentBal>=capital?'var(--accent)':'var(--red)';
+document.getElementById('capStart').textContent='$'+fmt(capital);document.getElementById('capCurrent').textContent='$'+fmt(currentBal);document.getElementById('capCurrent').style.color=currentBal>=capital?'var(--accent)':'var(--red)';
 document.getElementById('capCurrentIcon').style.background=currentBal>=capital?'linear-gradient(135deg,var(--accent),var(--accent-dark))':'linear-gradient(135deg,var(--red),var(--red-dark))';
-var chEl=document.getElementById('capChange');chEl.textContent=(change>=0?'+':'')+change+'$';chEl.style.color=change>=0?'var(--accent)':'var(--red)';
+var chEl=document.getElementById('capChange');chEl.textContent=(change>=0?'+':'')+fmt(change)+'$';chEl.style.color=change>=0?'var(--accent)':'var(--red)';
 var pctEl=document.getElementById('capChangePct');pctEl.textContent=(changePct>=0?'+':'')+changePct+'%';pctEl.style.color=changePct>=0?'var(--accent)':'var(--red)';pctEl.style.background=changePct>=0?'var(--accent-glow)':'var(--red-glow)';
-document.getElementById('dDays').textContent=s.n;document.getElementById('dWin').textContent=s.w;document.getElementById('dLose').textContent=s.l;document.getElementById('dRate').textContent=s.r+'%';
-document.getElementById('dBest').textContent='$'+s.best;document.getElementById('dWorst').textContent='$'+s.worst;document.getElementById('dAvg').textContent='$'+s.avg;document.getElementById('dTotal').textContent='$'+s.total;
+document.getElementById('dDays').textContent=s.n;document.getElementById('dWin').textContent=s.w;document.getElementById('dLose').textContent=s.l;
+document.getElementById('dTotalProfits').textContent='$'+fmt(s.totalProfits);document.getElementById('dTotalLosses').textContent='$'+fmt(s.totalLosses);
+document.getElementById('dAvg').textContent='$'+fmt(s.avg);document.getElementById('dTotal').textContent='$'+fmt(s.total);
+document.getElementById('dCapPct').textContent=(s.capPct>=0?'+':'')+s.capPct+'%';
 document.getElementById('countBadge').textContent=s.n;document.getElementById('emptyState').classList.toggle('hidden',s.n>0);document.getElementById('logSection').classList.toggle('hidden',s.n===0);
 renderStreak(d);var f=d.slice();var fs=document.getElementById('fStatus').value,ff=document.getElementById('fFrom').value,ft=document.getElementById('fTo').value;
 if(fs==='success')f=f.filter(function(e){return e.profit>0});else if(fs==='fail')f=f.filter(function(e){return e.profit<=0});
 if(ff)f=f.filter(function(e){return e.date>=ff});if(ft)f=f.filter(function(e){return e.date<=ft});
 var tbody=document.querySelector('#logTable tbody');tbody.innerHTML='';
 f.slice().reverse().forEach(function(e){var ok=e.profit>0;var tr=document.createElement('tr');
-tr.innerHTML='<td class="date-cell">'+e.date+'</td><td class="profit-cell" style="color:'+(e.profit>=0?'var(--accent)':'var(--red)')+'">'+(e.profit>=0?'+':'')+e.profit+'$</td><td><span class="status-badge '+(ok?'status-success':'status-fail')+'">'+(ok?'✅':'❌')+'</span></td><td><button class="btn btn-red btn-xs" onclick="del('+e.id+')">✕</button></td>';
+tr.innerHTML='<td class="date-cell">'+e.date+'</td><td class="profit-cell" style="color:'+(e.profit>=0?'var(--accent)':'var(--red)')+'">'+(e.profit>=0?'+':'')+fmt(e.profit)+'$</td><td><span class="status-badge '+(ok?'status-success':'status-fail')+'">'+(ok?'✅':'❌')+'</span></td><td><button class="btn btn-red btn-xs" onclick="del('+e.id+')">✕</button></td>';
 tbody.appendChild(tr)});updateChart(d,s)}
 function renderStreak(d){var dots=document.getElementById('streakDots'),cnt=document.getElementById('streakCount');dots.innerHTML='';var last=d.slice(-20);if(!last.length){dots.innerHTML='<span style="color:var(--text-muted);font-size:0.75rem">—</span>';cnt.textContent='';return}
-last.forEach(function(e){var x=document.createElement('div');x.className='streak-dot '+(e.profit>0?'win':'lose');x.title=e.date+': $'+e.profit;dots.appendChild(x)});var streak=0;for(var i=d.length-1;i>=0;i--){if(d[i].profit>0)streak++;else break}cnt.textContent=streak>0?'🔥 '+streak:''}
+last.forEach(function(e){var x=document.createElement('div');x.className='streak-dot '+(e.profit>0?'win':'lose');x.title=e.date+': $'+fmt(e.profit);dots.appendChild(x)});var streak=0;for(var i=d.length-1;i>=0;i--){if(d[i].profit>0)streak++;else break}cnt.textContent=streak>0?'🔥 '+streak:''}
 function addEntry(){var date=document.getElementById('inDate').value;var profit=parseFloat(document.getElementById('inProfit').value);if(!date){toast('اختر التاريخ','warning');return}if(isNaN(profit)){toast('أدخل الربح','warning');return}
 if(entries.some(function(e){return e.date===date})){if(!confirm('يوجد سجل لهذا التاريخ. استبدال؟'))return;entries=entries.filter(function(e){return e.date!==date})}
 entries.push({id:Date.now(),date:date,profit:Math.round(profit*100)/100});save();document.getElementById('inProfit').value='';var next=new Date(date);next.setDate(next.getDate()+1);document.getElementById('inDate').value=next.toISOString().split('T')[0];render();toast('تم إضافة '+date)}
@@ -266,11 +269,11 @@ function clearAll(){if(!confirm('مسح جميع البيانات؟'))return;ent
 function clearFilters(){document.getElementById('fStatus').value='all';document.getElementById('fFrom').value='';document.getElementById('fTo').value='';render()}
 var chart=null;
 function updateChart(d,s){var cv=document.getElementById('dailyChart'),nd=document.getElementById('chartNoData'),ft=document.getElementById('chartFooter');if(!d.length){cv.style.display='none';nd.style.display='block';ft.style.display='none';return}
-cv.style.display='block';nd.style.display='none';ft.style.display='grid';document.getElementById('cBest').textContent='$'+s.best;document.getElementById('cWorst').textContent='$'+s.worst;document.getElementById('cAvg').textContent='$'+s.avg;document.getElementById('cDays').textContent=s.n;
+cv.style.display='block';nd.style.display='none';ft.style.display='grid';document.getElementById('cBest').textContent='$'+fmt(s.best);document.getElementById('cWorst').textContent='$'+fmt(s.worst);document.getElementById('cAvg').textContent='$'+fmt(s.avg);document.getElementById('cDays').textContent=s.n;
 if(chart)chart.destroy();var colors=d.map(function(e){return e.profit>0?'#00e676':'#ff1744'});
 var isDark=document.body.getAttribute('data-theme')==='dark';var gridC=isDark?'rgba(0,230,118,0.06)':'rgba(0,130,60,0.08)';var tickC=isDark?'#4caf50':'#2e7d32';
 chart=new Chart(cv,{type:'bar',data:{labels:d.map(function(e){return e.date}),datasets:[{label:'P/L',data:d.map(function(e){return e.profit}),backgroundColor:colors.map(function(c){return c+'33'}),borderColor:colors,borderWidth:2,borderRadius:5,barPercentage:0.7}]},
-options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},plugins:{legend:{display:false},tooltip:{backgroundColor:isDark?'rgba(10,18,28,0.95)':'rgba(255,255,255,0.95)',titleColor:isDark?'#e8f5e9':'#1a2b1a',bodyColor:isDark?'#81c784':'#2e7d32',borderColor:isDark?'rgba(0,230,118,0.2)':'rgba(0,130,60,0.2)',borderWidth:1,padding:10,callbacks:{label:function(ctx){var v=ctx.parsed.y;return(v>=0?'+':'')+v+'$'}}}},
+options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},plugins:{legend:{display:false},tooltip:{backgroundColor:isDark?'rgba(10,18,28,0.95)':'rgba(255,255,255,0.95)',titleColor:isDark?'#e8f5e9':'#1a2b1a',bodyColor:isDark?'#81c784':'#2e7d32',borderColor:isDark?'rgba(0,230,118,0.2)':'rgba(0,130,60,0.2)',borderWidth:1,padding:10,callbacks:{label:function(ctx){var v=ctx.parsed.y;return(v>=0?'+':'')+fmt(v)+'$'}}}},
 scales:{x:{grid:{color:gridC,drawBorder:false},ticks:{color:tickC,font:{size:9,family:"'JetBrains Mono'"},maxRotation:45}},y:{grid:{color:gridC,drawBorder:false},ticks:{color:tickC,callback:function(v){return'$'+v},font:{size:10}}}}}})}
 function tog(id){var b=document.getElementById(id),t=b.previousElementSibling.querySelector('.toggle');b.classList.toggle('show');t.textContent=b.classList.contains('show')?'▲':'▼'}
 function startTicker(){var pE=document.getElementById('planText'),mE=document.getElementById('motText');var pi=0,mi=0;pE.textContent=planTexts[0];pE.classList.add('active');mE.textContent=motTexts[0];mE.classList.add('active');
@@ -301,8 +304,8 @@ doc.setFontSize(20);doc.setTextColor(0,230,118);doc.text('Trading Performance Jo
 doc.setFontSize(10);doc.setTextColor(150);doc.text(label,105,25,{align:'center'});
 doc.setDrawColor(0,230,118);doc.setLineWidth(0.5);doc.line(20,28,190,28);
 doc.setFontSize(9);doc.setTextColor(200,200,200);var y=35;
-[['Capital: $'+capital,'Current Balance: $'+currentBal],['Change: '+(s.total>=0?'+':'')+s.total+'$','Change: '+(capital>0?Math.round(s.total/capital*1000)/10:0)+'%'],['Trading Days: '+s.n,'Winning Days: '+s.w],['Losing Days: '+s.l,'Win Rate: '+s.r+'%'],['Total P/L: $'+s.total,'Avg Daily: $'+s.avg],['Best Day: $'+s.best,'Worst Day: $'+s.worst]].forEach(function(p){doc.text(p[0],22,y);doc.text(p[1],112,y);y+=5.5});
-doc.autoTable({startY:y+3,head:[['Date','Daily P/L','Status']],body:d.map(function(e){return[e.date,(e.profit>=0?'+':'')+e.profit+'$',e.profit>0?'WIN':'LOSS']}),theme:'grid',
+[['Capital: $'+fmt(capital),'Current Balance: $'+fmt(currentBal)],['Change: '+(s.total>=0?'+':'')+fmt(s.total)+'$','Change: '+(capital>0?Math.round(s.total/capital*1000)/10:0)+'%'],['Trading Days: '+s.n,'Winning Days: '+s.w],['Losing Days: '+s.l,'Win Rate: '+s.r+'%'],['Total P/L: $'+fmt(s.total),'Avg Daily: $'+fmt(s.avg)],['Best Day: $'+fmt(s.best),'Worst Day: $'+fmt(s.worst)]].forEach(function(p){doc.text(p[0],22,y);doc.text(p[1],112,y);y+=5.5});
+doc.autoTable({startY:y+3,head:[['Date','Daily P/L','Status']],body:d.map(function(e){return[e.date,(e.profit>=0?'+':'')+fmt(e.profit)+'$',e.profit>0?'WIN':'LOSS']}),theme:'grid',
 styles:{fontSize:7.5,cellPadding:2.5,textColor:[200,200,200],fillColor:[15,23,42],lineColor:[0,80,40],lineWidth:0.3},
 headStyles:{fillColor:[0,150,80],textColor:[255,255,255],fontSize:8,fontStyle:'bold'},alternateRowStyles:{fillColor:[10,18,28]},
 didParseCell:function(x){if(x.column.index===2&&x.section==='body'){x.cell.styles.textColor=x.cell.raw==='WIN'?[0,230,118]:[255,23,68];x.cell.styles.fontStyle='bold'}if(x.column.index===1&&x.section==='body'){x.cell.styles.textColor=x.cell.raw.indexOf('-')===0?[255,23,68]:[0,230,118]}}});
