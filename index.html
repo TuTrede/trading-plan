@@ -41,14 +41,15 @@ body>*{position:relative;z-index:1}
 .toggle.open{transform:rotate(180deg)}
 .card-bd{max-height:0;overflow:hidden;opacity:0;padding:0 16px;transition:max-height 0.45s cubic-bezier(0.4,0,0.2,1),opacity 0.35s cubic-bezier(0.4,0,0.2,1),padding 0.35s cubic-bezier(0.4,0,0.2,1)}
 .card-bd.show{max-height:3000px;opacity:1;padding:16px}
-.capital-bar{display:flex;align-items:center;gap:12px;padding:14px;background:linear-gradient(135deg,rgba(0,230,118,0.04),rgba(255,23,68,0.02));border:1px solid var(--border);border-radius:10px;flex-wrap:wrap;transition:all 0.4s}
-.cap-item{display:flex;align-items:center;gap:8px;flex:1;min-width:130px}
+.capital-bar{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;padding:16px;background:linear-gradient(135deg,rgba(0,230,118,0.04),rgba(255,23,68,0.02));border:1px solid var(--border);border-radius:10px;align-items:center;transition:all 0.4s}
+.cap-item{display:flex;align-items:center;gap:8px}
 .cap-icon{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
-.cap-label{color:var(--text-muted);font-size:0.7rem;font-weight:500}
-.cap-val{font-family:'JetBrains Mono',monospace;font-size:clamp(1.1rem,3vw,1.4rem);font-weight:700}
-.cap-arrow{color:var(--text-muted);font-size:1.2rem;flex-shrink:0}
-.cap-change-item{flex-direction:column;align-items:center;justify-content:center;min-width:90px;text-align:center}
-.cap-change{font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:700}
+.cap-label{color:var(--text-muted);font-size:0.72rem;font-weight:500}
+.cap-val{font-family:'JetBrains Mono',monospace;font-size:clamp(1rem,3vw,1.4rem);font-weight:700}
+.cap-arrow{color:var(--text-muted);font-size:1.2rem;justify-self:center}
+.cap-change-row{display:flex;gap:14px;justify-content:center;align-items:center;padding:10px 0 0;border-top:1px solid var(--border);margin-top:12px}
+.cap-change-item{display:flex;flex-direction:column;align-items:center;text-align:center}
+.cap-change{font-family:'JetBrains Mono',monospace;font-size:1.05rem;font-weight:700}
 .cap-change-pct{font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:600;padding:2px 8px;border-radius:6px;margin-top:2px}
 .cap-edit-box{background:rgba(0,230,118,0.04);border:1px solid var(--border);border-radius:10px;padding:14px;margin-top:10px}
 .dashboard{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
@@ -108,7 +109,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer}
 .chart-legend{display:flex;gap:10px}
 .legend-item{display:flex;align-items:center;gap:4px;font-size:0.7rem;color:var(--text-muted)}
 .legend-dot{width:8px;height:8px;border-radius:50%}
-.chart-area{position:relative;height:280px;width:100%}
+.chart-area{position:relative;height:320px;width:100%}
 .chart-footer{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
 .chart-stat{text-align:center;padding:6px;background:var(--bg-elevated);border-radius:8px;transition:all 0.4s}
 .chart-stat-val{font-family:'JetBrains Mono',monospace;font-size:0.88rem;font-weight:700;color:var(--accent)}
@@ -142,13 +143,15 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer}
 .report-row .field{min-width:100%}
 }
 @media(max-width:500px){
-.capital-bar{flex-direction:column;text-align:center;gap:10px}
-.cap-item{justify-content:center;min-width:100%}
-.cap-arrow{transform:rotate(90deg)}
+.capital-bar{grid-template-columns:1fr;gap:8px;text-align:center}
+.cap-item{justify-content:center}
+.cap-arrow{transform:rotate(90deg);font-size:1rem}
+.cap-change-row{flex-direction:row;gap:20px}
 .dashboard{gap:8px}
 .dash-card{padding:16px 6px;min-height:95px}
 .dash-val{font-size:1.2rem}
-.chart-area{height:220px}
+.chart-area{height:260px}
+.chart-head{flex-direction:column;gap:6px;align-items:flex-start}
 }
 </style>
 </head>
@@ -164,10 +167,13 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer}
 <div class="card"><div class="card-hd" onclick="tog('capBody')"><h3>💰 رأس المال والرصيد</h3><button class="toggle">▼</button></div>
 <div class="card-bd" id="capBody">
 <div class="capital-bar">
-<div class="cap-item"><div class="cap-icon" style="background:linear-gradient(135deg,var(--cyan),#0097a7)">💵</div><div><div class="cap-label">رأس المال الأساسي</div><div class="cap-val" style="color:var(--cyan)" id="capStart">$0</div></div><button class="btn btn-outline btn-xs" onclick="editCapital()" style="margin-right:auto">✏️</button></div>
+<div class="cap-item"><div class="cap-icon" style="background:linear-gradient(135deg,var(--cyan),#0097a7)">💵</div><div><div class="cap-label">رأس المال الأساسي</div><div class="cap-val" style="color:var(--cyan)" id="capStart">$0</div></div><button class="btn btn-outline btn-xs" onclick="editCapital()">✏️</button></div>
 <div class="cap-arrow">➜</div>
 <div class="cap-item"><div class="cap-icon" id="capCurrentIcon" style="background:linear-gradient(135deg,var(--accent),var(--accent-dark))">💰</div><div><div class="cap-label">الرصيد الحالي</div><div class="cap-val" id="capCurrent">$0</div></div></div>
-<div class="cap-item cap-change-item"><div class="cap-label">التغيير</div><div class="cap-change" id="capChange">$0</div><div class="cap-change-pct" id="capChangePct">0%</div></div>
+</div>
+<div class="cap-change-row">
+<div class="cap-change-item"><div class="cap-label">التغيير</div><div class="cap-change" id="capChange">$0</div></div>
+<div class="cap-change-item"><div class="cap-label">النسبة</div><div class="cap-change-pct" id="capChangePct">0%</div></div>
 </div>
 <div id="capEditBox" class="cap-edit-box hidden"><div class="add-form" style="margin:0"><div class="field"><label>💵 رأس المال</label><input type="number" id="capInput" class="form-input" min="0" step="0.01"></div><button class="btn btn-accent" onclick="saveCapital()" style="height:44px;white-space:nowrap">💾 حفظ</button><button class="btn btn-outline" onclick="cancelCapital()" style="height:44px">إلغاء</button></div></div>
 </div></div>
